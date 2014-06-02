@@ -105,10 +105,10 @@ public class FlightIndicatorsGUI : MonoBehaviour
     print("pos: "+(Vector3d)sf.localPosition);
     print("rot: "+(Vector3d)sf.localEulerAngles);
     print("scl: "+(Vector3d)sf.localScale);
-    print("status: "+sf.gameObject.activeInHierarchy+sf.renderer.enabled+sf.renderer.isVisible);
+    // print("status: "+sf.gameObject.activeInHierarchy+sf.renderer.enabled+sf.renderer.isVisible);
 
-    print("gameobj: "+DumpObjectProps(sf.gameObject));
-    print("renderer: "+DumpObjectProps(sf.renderer));
+    // print("gameobj: "+DumpObjectProps(sf.gameObject));
+    // print("renderer: "+DumpObjectProps(sf.renderer));
   }
 
 
@@ -144,23 +144,26 @@ public class FlightIndicatorsGUI : MonoBehaviour
 
         // frame
         var o=new GameObject("KzFlightIndicatorsFrame");
-        o.transform.parent=navBall.transform.Find("NavBall");
-        o.transform.localPosition=new Vector3(0.000676377210766077f-0.01f, -0.00270877708680928f, -0.250294268131256f);
-        o.transform.localEulerAngles=new Vector3(90, 180, 0);
-        o.transform.localScale=new Vector3(0.127970084547997f, 0.101707048714161f, 0.10845036059618f);
+        o.transform.parent=navBall.transform;
+        o.transform.localPosition=new Vector3(-0.28f, 0.22493f, 1.0f);
+        o.transform.localRotation=Quaternion.identity;
+        o.transform.localScale=Vector3.one;
+        // o.transform.localPosition=new Vector3(0.000676377210766077f-0.01f, -0.00270877708680928f, -0.250294268131256f);
+        // o.transform.localEulerAngles=new Vector3(90, 180, 0);
+        // o.transform.localScale=new Vector3(0.127970084547997f, 0.101707048714161f, 0.10845036059618f);
         o.layer=12;
 
         var m=new Mesh();
         m.vertices=new[]
         {
-          new Vector3( 0.5f, 0f, -0.5f),
-          new Vector3(-0.5f, 0f, -0.5f),
-          new Vector3( 0.5f, 0f,  0.5f),
-          new Vector3(-0.5f, 0f,  0.5f),
-          // new Vector3(0.00000f,  0.00000f, 0f),
-          // new Vector3(0.28153f,  0.00000f, 0f),
-          // new Vector3(0.00000f, -0.23859f, 0f),
-          // new Vector3(0.28153f, -0.23859f, 0f),
+          // new Vector3( 0.5f, 0f, -0.5f),
+          // new Vector3(-0.5f, 0f, -0.5f),
+          // new Vector3( 0.5f, 0f,  0.5f),
+          // new Vector3(-0.5f, 0f,  0.5f),
+          new Vector3(0.00000f,  0.00000f, 0f),
+          new Vector3(0.28153f,  0.00000f, 0f),
+          new Vector3(0.00000f, -0.23859f, 0f),
+          new Vector3(0.28153f, -0.23859f, 0f),
         };
 
         m.uv=new[]
@@ -205,12 +208,16 @@ public class FlightIndicatorsGUI : MonoBehaviour
 
         // text
         o=new GameObject("KzFlightIndicators");
-        o.transform.parent=navBall.transform.Find("NavBall");
+        o.transform.parent=navBall.transform;
+        o.transform.localPosition=new Vector3(-0.38f, 0.22493f, -0.5f);
+        o.transform.localRotation=Quaternion.identity;
+        o.transform.localScale=Vector3.one;
+        o.layer=12;
         // o.transform.localPosition=new Vector3(0.1000f, -0.15658f, 0.10f);
         // o.transform.localRotation=Quaternion.identity;
-        o.transform.localPosition=new Vector3(0.000676377210766077f-0.01f, -0.00270877708680928f, -0.250294268131256f);
-        o.transform.localEulerAngles=new Vector3(90, 180, 0);
-        o.transform.localScale=new Vector3(0.127970084547997f, 0.101707048714161f, 0.10845036059618f);
+        // o.transform.localPosition=new Vector3(0.000676377210766077f-0.01f, -0.00270877708680928f, -0.250294268131256f);
+        // o.transform.localEulerAngles=new Vector3(90, 180, 0);
+        // o.transform.localScale=new Vector3(0.127970084547997f, 0.101707048714161f, 0.10845036059618f);
 
         myText=o.AddComponent<ScreenSafeGUIText>();
         myText.text="";
@@ -226,8 +233,8 @@ public class FlightIndicatorsGUI : MonoBehaviour
       {
         // dumpGuiObj(navBall.transform);
         // dumpMesh(navBall.transform.Find("NavBall/frame"), navBall.transform);
-        dumpMesh(navBall.transform.Find("NavBall/testobj"), navBall.transform);
-        dumpMesh(navBall.transform.Find("NavBall/KzFlightIndicatorsFrame"), navBall.transform);
+        // dumpMesh(navBall.transform.Find("NavBall/testobj"), navBall.transform);
+        // dumpMesh(navBall.transform.Find("KzFlightIndicatorsFrame"), navBall.transform);
       }
 
       // print("background: "+myText.textStyle.normal.background);
