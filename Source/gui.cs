@@ -78,6 +78,25 @@ public class FlightIndicatorsGUI : MonoBehaviour
   }
 
 
+  void dumpMesh(Transform sf, Transform navBall)
+  {
+    print("*** mesh for "+sf.name);
+    var m=sf.GetComponent<MeshFilter>().sharedMesh;
+    print(m.vertices.Length+" verts "+m.triangles.Length/3.0f+" triangles");
+    for (int i=0; i<m.vertices.Length; ++i)
+    {
+      var p=navBall.InverseTransformPoint(sf.TransformPoint(m.vertices[i]));
+      print("v "+i+": "+(Vector3d)p+"  "+(Vector3d)m.vertices[i]+"  "+(Vector3d)(Vector3)m.uv[i]);
+    }
+    for (int i=0; i<m.triangles.Length; ++i)
+      print("ind "+m.triangles[i]);
+    print("tex: "+sf.renderer.material.mainTexture+" shader: "+sf.renderer.material.shader.name);
+    print("pos: "+(Vector3d)sf.localPosition);
+    print("rot: "+(Vector3d)sf.localEulerAngles);
+    print("scl: "+(Vector3d)sf.localScale);
+  }
+
+
   public void onDestroy()
   {
     if (myText!=null)
@@ -97,18 +116,52 @@ public class FlightIndicatorsGUI : MonoBehaviour
       var navBall=fmc.navBall;
       if (navBall!=null && myText==null)
       {
-        var t=FlightUIController.fetch.speed;
-        var o=new GameObject("KzFlightIndicators");
-        o.transform.parent=navBall.transform;
-        o.transform.localPosition=new Vector3(-0.38f, 0.23f, -0.5f);
-        // o.transform.localRotation=Quaternion.identity;
+        var srcText=FlightUIController.fetch.speed;
 
-        myText=o.AddComponent<ScreenSafeGUIText>();
-        myText.text="";
-        for (int i=0; i<12; ++i) myText.text+="Periapsis 987654 Gm\n";
-        myText.textSize=12;
-        myText.textStyle=new GUIStyle(t.textStyle);
-        myText.textStyle.alignment=TextAnchor.UpperLeft;
+        // frame
+        var o=new GameObject("KzFlightIndicatorsFrame");
+        o.transform.parent=navBall.transform.Find("NavBall");
+        o.transform.localPosition=new Vector3(0.000676377210766077f, -0.00270877708680928f, -0.250294268131256f);
+        o.transform.localEulerAngles=new Vector3(90, 180, 0);
+        o.transform.localScale=new Vector3(0.127970084547997f, 0.101707048714161f, 0.10845036059618f);
+
+        var m=new Mesh();
+        m.vertices=new[]
+        {
+          new Vector3( 0.5f, 0f, -0.5f),
+          new Vector3(-0.5f, 0f, -0.5f),
+          new Vector3( 0.5f, 0f,  0.5f),
+          new Vector3(-0.5f, 0f,  0.5f),
+          // new Vector3(0.00000f,  0.00000f, 0f),
+          // new Vector3(0.28153f,  0.00000f, 0f),
+          // new Vector3(0.00000f, -0.23859f, 0f),
+          // new Vector3(0.28153f, -0.23859f, 0f),
+        };
+
+        m.uv=new[]
+        {
+          new Vector2(0, 1),
+          new Vector2(1, 1),
+          new Vector2(0, 0),
+          new Vector2(1, 0),
+        };
+
+        m.triangles=new[]
+        {
+          0, 1, 2,
+          3, 2, 1,
+        };
+
+        m.RecalculateNormals();
+        m.RecalculateBounds();
+
+        o.AddComponent<MeshFilter>().sharedMesh=m;
+        o.AddComponent<MeshRenderer>();
+        o.renderer.sharedMaterial=new Material(navBall.transform.Find("NavBall/frame").renderer.material);
+        o.renderer.sharedMaterial.mainTexture=GameDatabase.Instance.GetTexture("FlightIndicators/frame", false);
+
+        print("frame mesh created!");
+
         //==
 
         // shader: "Unlit/Transparent Tint"
@@ -118,21 +171,32 @@ public class FlightIndicatorsGUI : MonoBehaviour
         // v 1: [0.142255127429962, 0.224930435419083, -0.550647377967834]  [1, 1, 0]
         // v 2: [-0.139279067516327, -0.0136603936553001, -0.550647377967834]  [0, 0, 0]
         // v 3: [0.142255127429962, -0.0136603936553001, -0.550647497177124]  [1, 0, 0]
+
+        // text
+        o=new GameObject("KzFlightIndicators");
+        o.transform.parent=navBall.transform.Find("NavBall");
+        // o.transform.localPosition=new Vector3(0.1000f, -0.15658f, 0.10f);
+        // o.transform.localRotation=Quaternion.identity;
+        o.transform.localPosition=new Vector3(0.000676377210766077f, -0.00270877708680928f, -0.250294268131256f);
+        o.transform.localEulerAngles=new Vector3(90, 180, 0);
+        o.transform.localScale=new Vector3(0.127970084547997f, 0.101707048714161f, 0.10845036059618f);
+
+        myText=o.AddComponent<ScreenSafeGUIText>();
+        myText.text="";
+        for (int i=0; i<12; ++i) myText.text+="Periapsis 987654 Gm\n";
+        myText.textSize=12;
+        myText.textStyle=new GUIStyle(srcText.textStyle);
+        myText.textStyle.alignment=TextAnchor.UpperLeft;
+
+        dumpGuiObj(navBall.transform);
       }
 
-      // if (navBall!=null)
-      // {
-      //   // dumpGuiObj(navBall.transform);
-      //   var sf=navBall.transform.Find("NavBall/frame");
-      //   var m=sf.GetComponent<MeshFilter>().sharedMesh;
-      //   print(m.vertices.Length+" verts "+m.triangles.Length/3.0f+" triangles");
-      //   for (int i=0; i<m.vertices.Length; ++i)
-      //   {
-      //     var p=navBall.transform.InverseTransformPoint(sf.TransformPoint(m.vertices[i]));
-      //     print("v "+i+": "+(Vector3d)p+"  "+(Vector3d)(Vector3)m.uv[i]);
-      //   }
-      //   print("tex: "+sf.renderer.material.mainTexture+" shader: "+sf.renderer.material.shader.name);
-      // }
+      if (navBall!=null)
+      {
+        // dumpGuiObj(navBall.transform);
+        dumpMesh(navBall.transform.Find("NavBall/frame"), navBall.transform);
+        dumpMesh(navBall.transform.Find("NavBall/KzFlightIndicatorsFrame"), navBall.transform);
+      }
 
       // print("background: "+myText.textStyle.normal.background);
 
