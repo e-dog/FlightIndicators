@@ -25,7 +25,12 @@ public class FlightIndicatorsGUI : MonoBehaviour
 
   public static string DumpObjectFields(object obj)
   {
-      BindingFlags flags = BindingFlags.Default;
+      BindingFlags flags =
+        BindingFlags.Public |
+        BindingFlags.Instance |
+        BindingFlags.GetField |
+        BindingFlags.GetProperty |
+        BindingFlags.FlattenHierarchy;
 
       StringBuilder sb = new StringBuilder();
       Type type = obj.GetType();
@@ -44,7 +49,12 @@ public class FlightIndicatorsGUI : MonoBehaviour
 
   public static string DumpObjectProps(object obj)
   {
-      BindingFlags flags = BindingFlags.Default;
+      BindingFlags flags =
+        BindingFlags.Public |
+        BindingFlags.Instance |
+        BindingFlags.GetField |
+        BindingFlags.GetProperty |
+        BindingFlags.FlattenHierarchy;
 
       StringBuilder sb = new StringBuilder();
       Type type = obj.GetType();
@@ -91,9 +101,14 @@ public class FlightIndicatorsGUI : MonoBehaviour
     for (int i=0; i<m.triangles.Length; ++i)
       print("ind "+m.triangles[i]);
     print("tex: "+sf.renderer.material.mainTexture+" shader: "+sf.renderer.material.shader.name);
+    print("tex ofs: "+sf.renderer.material.mainTextureOffset+sf.renderer.material.mainTextureScale+" color: "+sf.renderer.material.color);
     print("pos: "+(Vector3d)sf.localPosition);
     print("rot: "+(Vector3d)sf.localEulerAngles);
     print("scl: "+(Vector3d)sf.localScale);
+    print("status: "+sf.gameObject.activeInHierarchy+sf.renderer.enabled+sf.renderer.isVisible);
+
+    print("gameobj: "+DumpObjectProps(sf.gameObject));
+    print("renderer: "+DumpObjectProps(sf.renderer));
   }
 
 
@@ -118,12 +133,22 @@ public class FlightIndicatorsGUI : MonoBehaviour
       {
         var srcText=FlightUIController.fetch.speed;
 
+        // var fo=navBall.transform.Find("NavBall/frame").gameObject;
+        // var oo=GameObject.Instantiate(fo) as GameObject;
+        // oo.name="testobj";
+        // oo.transform.parent=fo.transform.parent;
+        // oo.transform.localPosition=fo.transform.localPosition+new Vector3(-0.01f, 0f, 0f);
+        // oo.transform.localRotation=fo.transform.localRotation;
+        // oo.transform.localScale=fo.transform.localScale;
+        // oo.renderer.material.mainTexture=GameDatabase.Instance.GetTexture("FlightIndicators/frame", false);
+
         // frame
         var o=new GameObject("KzFlightIndicatorsFrame");
         o.transform.parent=navBall.transform.Find("NavBall");
-        o.transform.localPosition=new Vector3(0.000676377210766077f, -0.00270877708680928f, -0.250294268131256f);
+        o.transform.localPosition=new Vector3(0.000676377210766077f-0.01f, -0.00270877708680928f, -0.250294268131256f);
         o.transform.localEulerAngles=new Vector3(90, 180, 0);
         o.transform.localScale=new Vector3(0.127970084547997f, 0.101707048714161f, 0.10845036059618f);
+        o.layer=12;
 
         var m=new Mesh();
         m.vertices=new[]
@@ -155,12 +180,18 @@ public class FlightIndicatorsGUI : MonoBehaviour
         m.RecalculateNormals();
         m.RecalculateBounds();
 
-        o.AddComponent<MeshFilter>().sharedMesh=m;
+        o.AddComponent<MeshFilter>().mesh=m;
         o.AddComponent<MeshRenderer>();
-        o.renderer.sharedMaterial=new Material(navBall.transform.Find("NavBall/frame").renderer.material);
-        o.renderer.sharedMaterial.mainTexture=GameDatabase.Instance.GetTexture("FlightIndicators/frame", false);
+        o.renderer.material=new Material(navBall.transform.Find("NavBall/frame").renderer.material);
+        o.renderer.material.mainTexture=GameDatabase.Instance.GetTexture("FlightIndicators/frame", false);
+        o.renderer.castShadows=false;
+        o.renderer.receiveShadows=false;
 
         print("frame mesh created!");
+
+        //==
+        // oo.GetComponent<MeshFilter>().mesh=m;
+        // oo.renderer.material=o.renderer.sharedMaterial;
 
         //==
 
@@ -177,7 +208,7 @@ public class FlightIndicatorsGUI : MonoBehaviour
         o.transform.parent=navBall.transform.Find("NavBall");
         // o.transform.localPosition=new Vector3(0.1000f, -0.15658f, 0.10f);
         // o.transform.localRotation=Quaternion.identity;
-        o.transform.localPosition=new Vector3(0.000676377210766077f, -0.00270877708680928f, -0.250294268131256f);
+        o.transform.localPosition=new Vector3(0.000676377210766077f-0.01f, -0.00270877708680928f, -0.250294268131256f);
         o.transform.localEulerAngles=new Vector3(90, 180, 0);
         o.transform.localScale=new Vector3(0.127970084547997f, 0.101707048714161f, 0.10845036059618f);
 
@@ -188,13 +219,14 @@ public class FlightIndicatorsGUI : MonoBehaviour
         myText.textStyle=new GUIStyle(srcText.textStyle);
         myText.textStyle.alignment=TextAnchor.UpperLeft;
 
-        dumpGuiObj(navBall.transform);
+        // dumpGuiObj(navBall.transform);
       }
 
       if (navBall!=null)
       {
         // dumpGuiObj(navBall.transform);
-        dumpMesh(navBall.transform.Find("NavBall/frame"), navBall.transform);
+        // dumpMesh(navBall.transform.Find("NavBall/frame"), navBall.transform);
+        dumpMesh(navBall.transform.Find("NavBall/testobj"), navBall.transform);
         dumpMesh(navBall.transform.Find("NavBall/KzFlightIndicatorsFrame"), navBall.transform);
       }
 
