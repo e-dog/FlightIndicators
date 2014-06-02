@@ -15,7 +15,7 @@ namespace Keramzit {
 [KSPAddon(KSPAddon.Startup.Flight, false)]
 public class FlightIndicatorsGUI : MonoBehaviour
 {
-  ScreenSafeGUIText myText;
+  List<ScreenSafeGUIText> leftText, rightText;
 
 
   public void Awake()
@@ -114,17 +114,136 @@ public class FlightIndicatorsGUI : MonoBehaviour
 
   public void onDestroy()
   {
-    if (myText!=null)
+    if (leftText!=null)
     {
-      myText.transform.parent=null;
-      UnityEngine.Object.Destroy(myText.gameObject);
-      myText=null;
+      foreach (var t in leftText) UnityEngine.Object.Destroy(t.gameObject);
+      leftText=null;
+    }
+
+    if (rightText!=null)
+    {
+      foreach (var t in rightText) UnityEngine.Object.Destroy(t.gameObject);
+      rightText=null;
+    }
+  }
+
+
+  const int layer=12;
+  const float scale=0.001115242428169431f;
+  const float frameOffset=150;
+
+
+  ScreenSafeGUIText makeText(float x, float y, GUIStyle style, Transform frame)
+  {
+    const float cx=121.10f*scale, cy=-104.54f*scale, cr=120.23f*scale;
+    const float y0=-7*scale, y1=-194*scale;
+
+    var o=new GameObject("KzFlightIndicators");
+    o.transform.parent=frame;
+    o.transform.localPosition=new Vector3((x*frameOffset+8)*scale, y*(y1-y0)+y0, 0);
+    o.transform.localRotation=Quaternion.identity;
+    o.transform.localScale=Vector3.one;
+    o.layer=layer;
+
+    var t=o.AddComponent<ScreenSafeGUIText>();
+    t.text="";
+    t.textSize=12;
+    t.textStyle=style;
+
+    return t;
+  }
+
+
+  void buildGui()
+  {
+    if (leftText!=null) return;
+
+    var fmc=FlightUIModeController.Instance;
+    if (fmc==null) return;
+
+    var navBall=fmc.navBall;
+    if (navBall==null) return;
+
+    var srcText=FlightUIController.fetch.speed;
+
+    // frame
+    var o=new GameObject("KzFlightIndicatorsFrame");
+    var frame=o.transform;
+    o.transform.parent=navBall.transform;
+    o.transform.localPosition=new Vector3(-(frameOffset+134)*scale, 0.22493f, 1.0f);
+    o.transform.localRotation=Quaternion.identity;
+    o.transform.localScale=Vector3.one;
+    o.layer=layer;
+
+    float w=256*scale;
+    float h=211*scale;
+
+    var m=new Mesh();
+    m.vertices=new[]
+    {
+      new Vector3(0f, 0f, 0f),
+      new Vector3( w, 0f, 0f),
+      new Vector3(0f, -h, 0f),
+      new Vector3( w, -h, 0f),
+      // new Vector3(0.00000f,  0.00000f, 0f),
+      // new Vector3(0.28153f,  0.00000f, 0f),
+      // new Vector3(0.00000f, -0.23859f, 0f),
+      // new Vector3(0.28153f, -0.23859f, 0f),
+    };
+
+    m.uv=new[]
+    {
+      new Vector2(0, 1),
+      new Vector2(1, 1),
+      new Vector2(0, 0),
+      new Vector2(1, 0),
+    };
+
+    m.triangles=new[]
+    {
+      0, 1, 2,
+      3, 2, 1,
+    };
+
+    m.RecalculateNormals();
+    m.RecalculateBounds();
+
+    o.AddComponent<MeshFilter>().mesh=m;
+    o.AddComponent<MeshRenderer>();
+    o.renderer.material=new Material(navBall.transform.Find("NavBall/frame").renderer.material);
+    o.renderer.material.mainTexture=GameDatabase.Instance.GetTexture("FlightIndicators/frame", false);
+    o.renderer.castShadows=false;
+    o.renderer.receiveShadows=false;
+
+    // text
+    leftText=new List<ScreenSafeGUIText>();
+    rightText=new List<ScreenSafeGUIText>();
+
+    var  leftStyle=new GUIStyle(srcText.textStyle);
+    var rightStyle=new GUIStyle(srcText.textStyle);
+    leftStyle .alignment=TextAnchor.MiddleLeft;
+    rightStyle.alignment=TextAnchor.MiddleRight;
+
+    for (int i=0; i<12; ++i)
+    {
+      var t=makeText(0, (i+0.5f)/12, leftStyle, frame);
+      t.text="Periapsis";
+      leftText.Add(t);
+
+      t=makeText(1, (i+0.5f)/12, rightStyle, frame);
+      t.text=i+"0654Gm";
+      rightText.Add(t);
     }
   }
 
 
   public void LateUpdate()
   {
+    buildGui();
+
+    //== update text
+
+    /*
     var fmc=FlightUIModeController.Instance;
     if (fmc!=null)
     {
@@ -132,6 +251,7 @@ public class FlightIndicatorsGUI : MonoBehaviour
       if (navBall!=null && myText==null)
       {
         var srcText=FlightUIController.fetch.speed;
+        const int layer=12;
 
         // var fo=navBall.transform.Find("NavBall/frame").gameObject;
         // var oo=GameObject.Instantiate(fo) as GameObject;
@@ -151,7 +271,7 @@ public class FlightIndicatorsGUI : MonoBehaviour
         // o.transform.localPosition=new Vector3(0.000676377210766077f-0.01f, -0.00270877708680928f, -0.250294268131256f);
         // o.transform.localEulerAngles=new Vector3(90, 180, 0);
         // o.transform.localScale=new Vector3(0.127970084547997f, 0.101707048714161f, 0.10845036059618f);
-        o.layer=12;
+        o.layer=layer;
 
         var m=new Mesh();
         m.vertices=new[]
@@ -212,7 +332,7 @@ public class FlightIndicatorsGUI : MonoBehaviour
         o.transform.localPosition=new Vector3(-0.38f, 0.22493f, -0.5f);
         o.transform.localRotation=Quaternion.identity;
         o.transform.localScale=Vector3.one;
-        o.layer=12;
+        o.layer=layer;
         // o.transform.localPosition=new Vector3(0.1000f, -0.15658f, 0.10f);
         // o.transform.localRotation=Quaternion.identity;
         // o.transform.localPosition=new Vector3(0.000676377210766077f-0.01f, -0.00270877708680928f, -0.250294268131256f);
@@ -244,6 +364,7 @@ public class FlightIndicatorsGUI : MonoBehaviour
       // print("myText: "+DumpObjectProps(myText.textStyle));
       // if (t!=null) print("pos: "+t.transform.position+" ofs: "+t.offset+" scale: "+t.transform.lossyScale);
     }
+    */
   }
 }
 
