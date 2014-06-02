@@ -135,12 +135,23 @@ public class FlightIndicatorsGUI : MonoBehaviour
 
   ScreenSafeGUIText makeText(float x, float y, GUIStyle style, Transform frame)
   {
-    const float cx=121.10f*scale, cy=-104.54f*scale, cr=120.23f*scale;
+    // const float cx=121.10f*scale;
+    const float cy=-104.54f*scale, cr=120.23f*scale;
     const float y0=-7*scale, y1=-194*scale;
+
+    float ty=(y1-y0)*y+y0;
+
+    float dy=Mathf.Abs(ty-cy);
+    dy+=(0.5f-x)*14*scale;
+    if (dy<0) dy=0;
+
+    float xo=cr*cr-dy*dy;
+    if (xo>=0) xo=cr-Mathf.Sqrt(xo);
+    else xo=cr;
 
     var o=new GameObject("KzFlightIndicators");
     o.transform.parent=frame;
-    o.transform.localPosition=new Vector3((x*frameOffset+8)*scale, y*(y1-y0)+y0, 0);
+    o.transform.localPosition=new Vector3((x*frameOffset+8)*scale+xo, ty, 0);
     o.transform.localRotation=Quaternion.identity;
     o.transform.localScale=Vector3.one;
     o.layer=layer;
@@ -148,6 +159,7 @@ public class FlightIndicatorsGUI : MonoBehaviour
     var t=o.AddComponent<ScreenSafeGUIText>();
     t.text="";
     t.textSize=12;
+    if (x<0.5f) t.textSize=10;
     t.textStyle=style;
 
     return t;
@@ -170,7 +182,7 @@ public class FlightIndicatorsGUI : MonoBehaviour
     var o=new GameObject("KzFlightIndicatorsFrame");
     var frame=o.transform;
     o.transform.parent=navBall.transform;
-    o.transform.localPosition=new Vector3(-(frameOffset+134)*scale, 0.22493f, 1.0f);
+    o.transform.localPosition=new Vector3(-(frameOffset+137)*scale, 0.22493f, 1.0f);
     o.transform.localRotation=Quaternion.identity;
     o.transform.localScale=Vector3.one;
     o.layer=layer;
