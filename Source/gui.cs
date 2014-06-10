@@ -18,6 +18,18 @@ public class FlightIndicatorsGUI : MonoBehaviour
   List<ScreenSafeGUIText> leftText, rightText;
 
 
+  void loadPanel(ConfigNode cfg)
+  {
+    foreach (ConfigNode node in cfg.nodes)
+    {
+      if (node.name=="INDICATOR")
+      {
+        print("indicator <"+node.GetValue("name")+"> <"+node.GetValue("value")+">");
+      }
+    }
+  }
+
+
   public void Awake()
   {
     // var f=KSP.IO.TextWriter.CreateForType<FlightIndicatorsGUI>("testfile.txt", null);
@@ -28,6 +40,18 @@ public class FlightIndicatorsGUI : MonoBehaviour
     // var r=KSP.IO.TextReader.CreateForType<FlightIndicatorsGUI>("testfile.txt", null);
     // print("Text length: "+r.ReadToEnd().Length);
     // r.Close();
+
+    var cfg=ConfigNode.Load(GameDatabase.Instance.PluginDataFolder+"GameData/FlightIndicators/indicators.cfg");
+    if (cfg!=null)
+    {
+      foreach (ConfigNode node in cfg.nodes)
+      {
+        if (node.name=="FLIGHT_INDICATORS_PANEL")
+        {
+          loadPanel(node);
+        }
+      }
+    }
   }
 
 
@@ -107,7 +131,7 @@ public class FlightIndicatorsGUI : MonoBehaviour
     o.layer=layer;
 
     float w=256*scale;
-    float h=211*scale;
+    float h=211.5f*scale;
 
     var m=new Mesh();
     m.vertices=new[]
