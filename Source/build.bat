@@ -4,7 +4,7 @@ set KSP=C:\games\KSPtest
  /out:"%KSP%\GameData\FlightIndicators\FlightIndicators.dll"^
  /r:"%KSP%\KSP_Data\Managed\Assembly-CSharp.dll"^
  /r:"%KSP%\KSP_Data\Managed\UnityEngine.dll"^
- gui.cs
+ gui.cs parser.cs
 if errorlevel 1 goto exit
 echo ======================================
 :exit

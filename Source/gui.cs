@@ -21,12 +21,22 @@ public class FlightIndicatorsGUI : MonoBehaviour
   class Indicator
   {
     public string name;
-    public string expression;
+    public string expressionText;
+    public Ast expr;
 
     public Indicator(string n, string e)
     {
       name=n;
-      expression=e;
+      expressionText=e;
+
+      if (string.IsNullOrEmpty(e))
+        expr=null;
+      else
+      {
+        expr=Parser.parseExpr(e);
+        if (expr==null) print("Error parsing expression '"+e+"'");
+        else print("'"+e+"' => "+expr.ToString());
+      }
     }
   }
 
