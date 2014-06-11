@@ -14,6 +14,21 @@ public class Ast
 }
 
 
+public class Error : Ast
+{
+  public string text;
+  public int pos;
+  public Ast parsed;
+  public string msg;
+
+  public Error(string t, int p, Ast a, string m) { text=t; pos=p; parsed=a; msg=m; }
+  public override string ToString()
+  {
+    return "Error at '"+text.Substring(pos)+"' (offset "+pos+"): "+msg;
+  }
+}
+
+
 public class NameAtom : Ast
 {
   public string name;
@@ -127,9 +142,12 @@ public class Parser
     for (;;)
     {
       var pos=savePos();
-      string tag=null;
-      if (token(".") && ident(out tag))
+      if (token("."))
+      {
+        string tag=null;
+        if (!ident(out tag)) return new Error(text, pos, sub, "expected identifier after .");
         sub=new DotOp(sub, tag);
+      }
       else
         { restorePos(pos); break; }
     }
@@ -151,7 +169,11 @@ public class Parser
     if (string.IsNullOrEmpty(text)) return null;
 
     var p=new Parser(text);
-    return p.expr();
+    var e=p.expr();
+    if (e==null || e is Error) return e;
+    p.skipWS();
+    if (p.atEnd()) return e;
+    return new Error(text, p.curPos, e, "extra text after end of expression");
   }
 }
 

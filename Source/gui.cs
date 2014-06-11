@@ -34,8 +34,16 @@ public class FlightIndicatorsGUI : MonoBehaviour
       else
       {
         expr=Parser.parseExpr(e);
-        if (expr==null) print("Error parsing expression '"+e+"'");
-        else print("'"+e+"' => "+expr.ToString());
+        if (expr==null)
+          print("Error parsing expression '"+e+"' of "+name);
+        else if (expr is Error)
+        {
+          var err=expr as Error;
+          print(name+": "+err);
+          expr=err.parsed;
+        }
+
+        if (expr!=null) print(name+": '"+e+"' => "+expr);
       }
     }
   }
