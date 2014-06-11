@@ -18,15 +18,46 @@ public class FlightIndicatorsGUI : MonoBehaviour
   List<ScreenSafeGUIText> leftText, rightText;
 
 
+  class Indicator
+  {
+    public string name;
+    public string expression;
+
+    public Indicator(string n, string e)
+    {
+      name=n;
+      expression=e;
+    }
+  }
+
+
+  class Panel
+  {
+    public List<Indicator> indicators=new List<Indicator>();
+  }
+
+
+  List<Panel> panels=new List<Panel>();
+
+
   void loadPanel(ConfigNode cfg)
   {
+    var panel=new Panel();
+
     foreach (ConfigNode node in cfg.nodes)
     {
       if (node.name=="INDICATOR")
       {
-        print("indicator <"+node.GetValue("name")+"> <"+node.GetValue("value")+">");
+        // print("indicator <"+node.GetValue("name")+"> <"+node.GetValue("value")+">");
+        string name=null, value=null;
+        if (node.HasValue("name")) name=node.GetValue("name");
+        if (node.HasValue("value")) value=node.GetValue("value");
+        var ind=new Indicator(name, value);
+        panel.indicators.Add(ind);
       }
     }
+
+    panels.Add(panel);
   }
 
 
@@ -47,9 +78,7 @@ public class FlightIndicatorsGUI : MonoBehaviour
       foreach (ConfigNode node in cfg.nodes)
       {
         if (node.name=="FLIGHT_INDICATORS_PANEL")
-        {
           loadPanel(node);
-        }
       }
     }
   }
