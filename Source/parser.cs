@@ -44,8 +44,8 @@ public class NameAtom : Ast
 
   public override object eval()
   {
-    //==
-    return name;
+    if (name=="orbit") return new ObjectWrapper(new WrapTest());
+    return null;
   }
 }
 
@@ -67,8 +67,13 @@ public class DotOp : UnaryOp
 
   public override object eval()
   {
-    //==
-    return sub.eval()+"."+tag;
+    var v=sub.eval();
+    if (v==null) return null;
+
+    var ow=v as ObjectWrapper;
+    if (ow!=null) return ow.getProp(tag);
+
+    return null;
   }
 }
 
