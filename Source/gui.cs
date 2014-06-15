@@ -81,15 +81,6 @@ public class FlightIndicatorsGUI : MonoBehaviour
 
   public void Awake()
   {
-    // var f=KSP.IO.TextWriter.CreateForType<FlightIndicatorsGUI>("testfile.txt", null);
-    // f.WriteLine("Writing a line!");
-    // f.WriteLine("Another one");
-    // f.Close();
-
-    // var r=KSP.IO.TextReader.CreateForType<FlightIndicatorsGUI>("testfile.txt", null);
-    // print("Text length: "+r.ReadToEnd().Length);
-    // r.Close();
-
     var cfg=ConfigNode.Load(GameDatabase.Instance.PluginDataFolder+"GameData/FlightIndicators/indicators.cfg");
     if (cfg!=null)
     {
@@ -178,7 +169,7 @@ public class FlightIndicatorsGUI : MonoBehaviour
     o.layer=layer;
 
     float w=256*scale;
-    float h=211.5f*scale;
+    float h=212f*scale;
 
     var m=new Mesh();
     m.vertices=new[]
@@ -239,7 +230,32 @@ public class FlightIndicatorsGUI : MonoBehaviour
   {
     buildGui();
 
-    //== update text
+    // update text
+    if (panels.Count>0)
+    {
+      var panel=panels[0];
+
+      for (int i=0; i<leftText.Count; ++i)
+      {
+        if (i<panel.indicators.Count)
+        {
+          var ind=panel.indicators[i];
+          leftText [i].text=ind.name;
+          if (ind.expr==null) rightText[i].text="";
+          else
+          {
+            object v=ind.expr.eval();
+            if (v==null) v="";
+            rightText[i].text=v.ToString();
+          }
+        }
+        else
+        {
+          leftText [i].text="";
+          rightText[i].text="";
+        }
+      }
+    }
   }
 }
 

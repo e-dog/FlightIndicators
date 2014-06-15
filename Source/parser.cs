@@ -9,8 +9,9 @@ namespace Keramzit {
 //ZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZ//
 
 
-public class Ast
+public abstract class Ast
 {
+  public abstract object eval();
 }
 
 
@@ -26,6 +27,11 @@ public class Error : Ast
   {
     return "Error at '"+text.Substring(pos)+"' (offset "+pos+"): "+msg;
   }
+
+  public override object eval()
+  {
+    return null;
+  }
 }
 
 
@@ -35,10 +41,16 @@ public class NameAtom : Ast
 
   public NameAtom(string n) { name=n; }
   public override string ToString() { return "NameAtom("+name+")"; }
+
+  public override object eval()
+  {
+    //==
+    return name;
+  }
 }
 
 
-public class UnaryOp : Ast
+public abstract class UnaryOp : Ast
 {
   public Ast sub;
 
@@ -52,7 +64,16 @@ public class DotOp : UnaryOp
 
   public DotOp(Ast s, string t) : base(s) { tag=t; }
   public override string ToString() { return "DotOp("+sub.ToString()+", "+tag+")"; }
+
+  public override object eval()
+  {
+    //==
+    return sub.eval()+"."+tag;
+  }
 }
+
+
+//ZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZ//
 
 
 public class Parser
