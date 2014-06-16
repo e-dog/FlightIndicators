@@ -102,6 +102,25 @@ public class Parser
         if (!ident(out tag)) return new Error(text, pos, sub, "expected identifier after .");
         sub=new DotOp(sub, tag);
       }
+      else if (token("("))
+      {
+        var args=new List<Ast>(4);
+        while (!token(")"))
+        {
+          if (atEnd()) return new Error(text, pos, sub, "unmatched ( in function call");
+
+          pos=savePos();
+          var a=expr();
+          if (a==null) return new Error(text, pos, sub, "expected function argument");
+          args.Add(a);
+
+          if (token(",")) {}
+          else if (token(")")) break;
+          else return new Error(text, pos, sub, "expected , or )");
+        }
+
+        sub=new FuncCall(sub, args.ToArray());
+      }
       else
         { restorePos(pos); break; }
     }

@@ -22,28 +22,43 @@ public class WrapTest
 //ZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZ//
 
 
+public class MethodWrapper
+{
+  protected object obj;
+  protected MethodInfo method;
+
+  public MethodWrapper(object o, MethodInfo m)
+  {
+    obj=o; method=m;
+  }
+
+  public object invoke(object[] args)
+  {
+    var r=method.Invoke(obj, args);
+    return ObjectWrapper.wrap(r);
+  }
+}
+
+
+//ZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZ//
+
+
 public class ObjectWrapper
 {
   protected object obj;
+  protected Type type;
 
-  public ObjectWrapper(object o) { obj=o; }
+  public ObjectWrapper(object o) { obj=o; type=o.GetType(); }
+  public ObjectWrapper(object o, Type t) { obj=o; type=t; }
 
-  public object getProp(string name)
+  public object getMember(string name)
   {
-    if (obj==null) return null;
-
     BindingFlags flags =
       BindingFlags.Public |
       BindingFlags.Instance |
       BindingFlags.Static |
       BindingFlags.GetField |
       BindingFlags.GetProperty;
-      // BindingFlags.FlattenHierarchy;
-
-    var type=obj.GetType();
-
-    // var prop=type.GetProperty(name, flags);
-    // if (prop!=null) return prop.GetValue(obj, null);
 
     var members=type.GetMember(name, flags);
     if (members==null || members.Length!=1) return null;
@@ -53,6 +68,9 @@ public class ObjectWrapper
 
     var field=members[0] as FieldInfo;
     if (field!=null) return wrap(field.GetValue(obj));
+
+    var method=members[0] as MethodInfo;
+    if (method!=null) return new MethodWrapper(obj, method);
 
     return null;
   }
@@ -66,7 +84,10 @@ public class ObjectWrapper
   public static object wrap(object o)
   {
     if (o==null) return null;
-    if (o is ObjectWrapper || o is int || o is string || o is float || o is double || o is char) return o;
+
+    if (o is ObjectWrapper || o is MethodWrapper
+      || o is int || o is string || o is float || o is double || o is char) return o;
+
     return new ObjectWrapper(o);
   }
 }

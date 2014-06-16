@@ -44,6 +44,9 @@ public class NameAtom : Ast
   public override object eval()
   {
     if (name=="orbit") return new ObjectWrapper(FlightGlobals.ship_orbit);
+    else if (name=="Math") return new ObjectWrapper(null, typeof(Math));
+    else if (name=="format_distance" || name=="format_timespan")
+      return new MethodWrapper(null, typeof(Utils).GetMethod(name));
     return null;
   }
 }
@@ -70,9 +73,43 @@ public class DotOp : UnaryOp
     if (v==null) return null;
 
     var ow=v as ObjectWrapper;
-    if (ow!=null) return ow.getProp(tag);
+    if (ow!=null) return ow.getMember(tag);
 
     return null;
+  }
+}
+
+
+public class FuncCall : UnaryOp
+{
+  public Ast[] args;
+
+  public FuncCall(Ast f, Ast[] a) : base(f) { args=a; }
+
+  public override string ToString()
+  {
+    var s="FuncCall("+sub.ToString()+", [";
+    var first=true;
+    if (args!=null) foreach (var a in args)
+    {
+      if (first) first=false;
+      else s+=", ";
+      s+=a.ToString();
+    }
+    s+="])";
+    return s;
+  }
+
+  public override object eval()
+  {
+    var f=sub.eval();
+    var m=f as MethodWrapper;
+    if (m==null) return null;
+
+    var av=new object[args==null?0:args.Length];
+    for (int i=0; i<av.Length; ++i) av[i]=args[i].eval();
+
+    return m.invoke(av);
   }
 }
 
