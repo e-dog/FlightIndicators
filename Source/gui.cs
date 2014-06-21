@@ -56,6 +56,7 @@ public class FlightIndicatorsGUI : MonoBehaviour
 
 
   List<Panel> panels=new List<Panel>();
+  int curPanel=0;
 
 
   void loadPanel(ConfigNode cfg)
@@ -79,17 +80,27 @@ public class FlightIndicatorsGUI : MonoBehaviour
   }
 
 
-  public void Awake()
+  void loadConfig()
   {
     var cfg=ConfigNode.Load(GameDatabase.Instance.PluginDataFolder+"GameData/FlightIndicators/indicators.cfg");
     if (cfg!=null)
     {
+      panels.Clear();
+
       foreach (ConfigNode node in cfg.nodes)
       {
         if (node.name=="FLIGHT_INDICATORS_PANEL")
           loadPanel(node);
       }
+
+      print(string.Format("loaded {0} panels", panels.Count));
     }
+  }
+
+
+  public void Awake()
+  {
+    loadConfig();
   }
 
 
@@ -147,6 +158,25 @@ public class FlightIndicatorsGUI : MonoBehaviour
   }
 
 
+  void onLeftClick()
+  {
+    if (Input.GetKey(KeyCode.LeftAlt) || Input.GetKey(KeyCode.LeftControl) || Input.GetKey(KeyCode.LeftShift))
+    {
+      loadConfig();
+    }
+    else
+    {
+      if (++curPanel>=panels.Count) curPanel=0;
+    }
+  }
+
+
+  void onRightClick()
+  {
+    if (--curPanel<0) curPanel=panels.Count-1;
+  }
+
+
   void buildGui()
   {
     if (leftText!=null) return;
@@ -158,6 +188,11 @@ public class FlightIndicatorsGUI : MonoBehaviour
     if (navBall==null) return;
 
     var srcText=FlightUIController.fetch.speed;
+
+    var  leftStyle=new GUIStyle(srcText.textStyle);
+    var rightStyle=new GUIStyle(srcText.textStyle);
+    leftStyle .alignment=TextAnchor.MiddleLeft;
+    rightStyle.alignment=TextAnchor.MiddleRight;
 
     // frame
     var o=new GameObject("KzFlightIndicatorsFrame");
@@ -204,14 +239,21 @@ public class FlightIndicatorsGUI : MonoBehaviour
     o.renderer.castShadows=false;
     o.renderer.receiveShadows=false;
 
+    // button
+    var c=o.AddComponent<BoxCollider>();
+    c.center=new Vector3(frameOffset*scale*0.5f, -0.5f*h, 0);
+    c.size=new Vector3(frameOffset*scale, h, 0.5f);
+
+    var b=o.AddComponent<ScreenSafeUIButton>();
+    b.use4StateTexture=false;
+    b.enableRightClick=true;
+    b.OnPress+=onLeftClick;
+    b.OnRightPress+=onRightClick;
+    b.tooltipTextStyle=leftStyle;
+
     // text
     leftText=new List<ScreenSafeGUIText>();
     rightText=new List<ScreenSafeGUIText>();
-
-    var  leftStyle=new GUIStyle(srcText.textStyle);
-    var rightStyle=new GUIStyle(srcText.textStyle);
-    leftStyle .alignment=TextAnchor.MiddleLeft;
-    rightStyle.alignment=TextAnchor.MiddleRight;
 
     for (int i=0; i<12; ++i)
     {
@@ -231,9 +273,9 @@ public class FlightIndicatorsGUI : MonoBehaviour
     buildGui();
 
     // update text
-    if (panels.Count>0)
+    if (curPanel>=0 && curPanel<panels.Count)
     {
-      var panel=panels[0];
+      var panel=panels[curPanel];
 
       for (int i=0; i<leftText.Count; ++i)
       {
@@ -256,6 +298,12 @@ public class FlightIndicatorsGUI : MonoBehaviour
         }
       }
     }
+  }
+
+
+  public static void print(string s)
+  {
+    Debug.Log("[FlightIndicators] "+s);
   }
 }
 
