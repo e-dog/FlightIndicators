@@ -57,6 +57,7 @@ public class FlightIndicatorsGUI : MonoBehaviour
 
   List<Panel> panels=new List<Panel>();
   int curPanel=0;
+  Vector2 panelOffset;
 
 
   void loadPanel(ConfigNode cfg)
@@ -90,7 +91,13 @@ public class FlightIndicatorsGUI : MonoBehaviour
       foreach (ConfigNode node in cfg.nodes)
       {
         if (node.name=="FLIGHT_INDICATORS_PANEL")
+        {
           loadPanel(node);
+        }
+        else if (node.name=="FLIGHT_INDICATORS_SETTINGS")
+        {
+          if (node.HasValue("panelOffset")) panelOffset=ConfigNode.ParseVector2(node.GetValue("panelOffset"));
+        }
       }
 
       print(string.Format("loaded {0} panels", panels.Count));
@@ -127,23 +134,13 @@ public class FlightIndicatorsGUI : MonoBehaviour
 
   ScreenSafeGUIText makeText(float x, float y, GUIStyle style, Transform frame)
   {
-    // const float cx=121.10f*scale;
-    const float cy=-104.54f*scale, cr=120.23f*scale;
     const float y0=-7*scale, y1=-194*scale;
 
     float ty=(y1-y0)*y+y0;
 
-    float dy=Mathf.Abs(ty-cy);
-    dy+=(0.5f-x)*14*scale;
-    if (dy<0) dy=0;
-
-    float xo=cr*cr-dy*dy;
-    if (xo>=0) xo=cr-Mathf.Sqrt(xo);
-    else xo=cr;
-
     var o=new GameObject("KzFlightIndicators");
     o.transform.parent=frame;
-    o.transform.localPosition=new Vector3((x*frameOffset+8)*scale+xo, ty, 0);
+    o.transform.localPosition=new Vector3((x*236+10)*scale, ty, 0);
     o.transform.localRotation=Quaternion.identity;
     o.transform.localScale=Vector3.one;
     o.layer=layer;
@@ -163,6 +160,12 @@ public class FlightIndicatorsGUI : MonoBehaviour
     if (Input.GetKey(KeyCode.LeftAlt) || Input.GetKey(KeyCode.LeftControl) || Input.GetKey(KeyCode.LeftShift))
     {
       loadConfig();
+
+      if (leftText.Count>0)
+      {
+        var frame=leftText[0].transform.parent;
+        frame.localPosition=new Vector3(panelOffset.x*scale, panelOffset.y*scale, 1.0f);
+      }
     }
     else
     {
@@ -198,13 +201,13 @@ public class FlightIndicatorsGUI : MonoBehaviour
     var o=new GameObject("KzFlightIndicatorsFrame");
     var frame=o.transform;
     o.transform.parent=navBall.transform;
-    o.transform.localPosition=new Vector3(-(frameOffset+137)*scale, 0.22493f, 1.0f);
+    o.transform.localPosition=new Vector3(panelOffset.x*scale, panelOffset.y*scale, 1.0f);
     o.transform.localRotation=Quaternion.identity;
     o.transform.localScale=Vector3.one;
     o.layer=layer;
 
     float w=256*scale;
-    float h=212f*scale;
+    float h=211*scale;
 
     var m=new Mesh();
     m.vertices=new[]
@@ -241,8 +244,8 @@ public class FlightIndicatorsGUI : MonoBehaviour
 
     // button
     var c=o.AddComponent<BoxCollider>();
-    c.center=new Vector3(frameOffset*scale*0.5f, -0.5f*h, 0);
-    c.size=new Vector3(frameOffset*scale, h, 0.5f);
+    // c.center=new Vector3(-0.5f*w, -0.5f*h, 0);
+    c.size=new Vector3(w, h, 0.5f);
 
     var b=o.AddComponent<ScreenSafeUIButton>();
     b.use4StateTexture=false;
